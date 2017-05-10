@@ -17,11 +17,18 @@ bool sema_try_down (struct semaphore *);
 void sema_up (struct semaphore *);
 void sema_self_test (void);
 
+struct priority_donated {
+  struct lock *lock_donated;
+  struct list_elem elem;
+  int donated_priority;
+};
+
 /* Lock. */
 struct lock 
   {
     struct thread *holder;      /* Thread holding lock (for debugging). */
     struct semaphore semaphore; /* Binary semaphore controlling access. */
+    struct priority_donated p_d;
   };
 
 void lock_init (struct lock *);
@@ -41,6 +48,8 @@ void cond_wait (struct condition *, struct lock *);
 void cond_signal (struct condition *, struct lock *);
 void cond_broadcast (struct condition *, struct lock *);
 
+void priority_donated_init (struct priority_donated *, struct lock *);
+bool donated_priority_more (const struct list_elem *, const struct list_elem *, void *aux);
 /* Optimization barrier.
 
    The compiler will not reorder operations across an

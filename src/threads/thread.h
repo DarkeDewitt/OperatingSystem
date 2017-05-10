@@ -92,7 +92,9 @@ struct thread
     int ticks_blocked;
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
-
+    struct list list_priority_donated;
+    struct lock *blocked;
+    int real_priority;
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
@@ -139,5 +141,6 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
+void check_priority(struct thread *t, void *aux); 
 
 #endif /* threads/thread.h */

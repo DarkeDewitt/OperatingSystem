@@ -368,12 +368,25 @@ thread_foreach (thread_action_func *func, void *aux)
 void
 thread_set_priority (int new_priority) 
 {
-  thread_current ()->priority = new_priority;
+  thread_current()->real_priority = new_priority;
+  check_priority(thread_current(), NULL);
   if(!list_empty (&ready_list)) {
     if(new_priority < list_entry(list_front(&ready_list), struct thread, elem)->priority) {
       thread_yield();
     }
   }
+}
+
+void
+check_priority(struct thread* t, void *aux UNUSED) {
+  if(&t->list_priority_donated != NULL) {
+    if(list_entry(list_begin(&t->list_priority_donated), struct priority_donated, elem)->donated_priority > t->real_priority) {
+      t->priority = list_entry(list_begin(&t->list_priority_donated), struct priority_donated, elem)->donated_priority;
+    } else {
+      t->priority = t->real_priority;
+    }
+  }
+  list_sort(&ready_list, (list_less_func *) more_than, NULL);
 }
 
 /* Returns the current thread's priority. */
@@ -499,6 +512,9 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
+  t->blocked = NULL;
+  t->real_priority = priority;
+  list_init(&t->list_priority_donated);
 //  list_push_back (&all_list, &t->allelem);
   list_insert_ordered(&all_list, &t->allelem, (list_less_func *)&more_than, NULL);
 }
