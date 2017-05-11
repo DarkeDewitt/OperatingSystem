@@ -210,22 +210,23 @@ lock_acquire (struct lock *lock)
     thread_current()->blocked = l;
   }
   while(t != NULL) {
-    bool fuck = false;
+    bool is = false;
     if(l->p_d.donated_priority == 0) {
       l->p_d.donated_priority = p;
     }
-    for(iter = list_begin(&t->list_priority_donated); iter != list_end(&t->list_priority_donated); iter = list_next(iter)) {
+    struct list *l_p_d = &t->list_priority_donated;
+    for(iter = list_begin(l_p_d); iter != list_end(l_p_d); iter = list_next(iter)) {
       if(list_entry(iter, struct priority_donated, elem)->lock_donated == l) {
-        if(list_entry(iter, struct priority_donated, elem)->donated_priority < p) {
+        if(l->p_d.donated_priority < p) {
           list_remove(iter);
           l->p_d.donated_priority = p;
         } else {
-          fuck = true;
+          is = true;
         }
         break;
       }
     }
-    if(!fuck) {
+    if(!is) {
       list_insert_ordered(&t->list_priority_donated, &l->p_d.elem, (list_less_func *)donated_priority_more, NULL);
     } else {
       break;

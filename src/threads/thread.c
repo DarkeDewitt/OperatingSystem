@@ -272,8 +272,6 @@ blocked_thread_check (struct thread *t, void *aux UNUSED) {
   }
 }  
 
-
-
 /* Returns the name of the running thread. */
 const char *
 thread_name (void) 
@@ -385,8 +383,13 @@ check_priority(struct thread* t, void *aux UNUSED) {
     } else {
       t->priority = t->real_priority;
     }
+  } else {
+    t->priority = t->real_priority;
   }
-  list_sort(&ready_list, (list_less_func *) more_than, NULL);
+  if(t->status == THREAD_READY) {
+    list_sort(&ready_list, (list_less_func *) more_than, NULL);
+  }
+  
 }
 
 /* Returns the current thread's priority. */
